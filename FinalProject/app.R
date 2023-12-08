@@ -10,7 +10,7 @@ library(knitr)
 library(htmltools)
 library(DT)
 # Dataset to be explored
-raw_df <- read.csv("C:\\PestList\\MyDocuments\\Statistic\\ST558\\ShinyApps\\FinalProject\\NHANES_age_prediction.csv")
+raw_df <- read.csv("C:/PestList/MyDocuments/Statistic/ST558/repos/FinalProject/NHANES_age_prediction.csv")
 
 # Pre-compute some variables to be used by app
 # convert some variable to factor
@@ -47,6 +47,9 @@ ui <- dashboardPage(
       # First tab content
       tabItem(tabName = "about",
               fluidRow(
+                mainPanel(
+                  imageOutput("logo")
+                ),
                 #two columns for each of the two items
                 column(6,
                        #Description of App
@@ -72,98 +75,110 @@ ui <- dashboardPage(
                        )
                 ),
                 
-                mainPanel(
-                  imageOutput("logo")
-                )
+                
               )
       ),
       
       #actual app layout (second tab)     
       tabItem(tabName = "EDA",
-              fluidRow(
-                withMathJax(),
-                p("This tab is for exploratory data analysis. The controls in the sidebar are for the", strong("Plot"), "tabs.
-Cor_Matrix and Summary are for the whole data set. Table show the table of observations for each group"),
-                sidebarPanel(
-                  h4("Subset data by gender:"),
-                  selectizeInput("RIAGENDR", "Gender", selected = "Male", choices = levels(as.factor(raw_df$RIAGENDR))),
-                  br(),
-                  selectInput("plotType", "Plot Type",
-                              choices = c("Scatter Plot", "Boxplot", "BarPlot", "Histogram"),
-                              selected = "Scatter Plot"),
-                  # Only show this panel if the plot type is a scatter plot
-                  conditionalPanel(
-                    condition = "input.plotType == 'Scatter Plot'",
-                    selectInput("scatx", "X-axis Variable", 
-                                choices = numeric, 
-                                selected = "RIDAGEYR"),
-                    selectInput("scaty", "Y-axis Variable", 
-                                choices = numeric, 
-                                selected = "RIDAGEYR")
-                  ),
-                  conditionalPanel(
-                    condition = "input.plotType == 'Boxplot'",
-                    
-                    selectInput("boxx", "X-axis Variable", 
-                                choices = character_vars, 
-                                selected = "age_group"),
-                    selectInput("boxy", "Y-axis Variable", 
-                                choices = numeric,  
-                                selected = "RIDAGEYR")
-                  ),
-                  conditionalPanel(
-                    condition = "input.plotType == 'BarPlot'",
-                    selectInput("barx", "X-axis Variable", 
-                                choices = character_vars, selected = "age_group"),
-                    selectInput("bary", "Y-axis Variable", 
-                                choices = character_vars, 
-                                selected = "age_group")
-                  ),
-                  conditionalPanel(
-                    condition = "input.plotType == 'Histogram'",
-                    selectInput("histx", "X-axis Variable", 
-                                choices = numeric,
-                                selected = "RIDAGEYR")
-                  ),
-                  
-                  # only allow non-numeric variables for color
-                  selectInput("color", "Color", c("None", names(df)[character])),
-                  
-                  p("Smoothing is only available when two numeric variables are selected."),
-                  checkboxInput("smooth", "Smooth"),
-                  h4("You can find the", strong("sample mean"), " for a few variables below:"),
-                  selectInput("var", label = "Variables to Summarize", 
-                              choices = c("RIDAGEYR", "BMXBMI", "LBXGLU", "LBXGLT", "LBXGIN"),
-                              selected = "RIDAGEYR"),
-                  numericInput("round", "Select the number of digits for rounding", value = 2, min = 0, max = 5)
-                ),
-                
-                mainPanel(
-                  # Output: Tabset
-                  tabsetPanel(type = "tabs",
-                              tabPanel("Plot Type", 
-                                       conditionalPanel(
-                                         condition = "input.plotType == 'Scatter Plot'",
-                                         plotOutput("plotType")
-                                       ),
-                                       conditionalPanel(
-                                         condition = "input.plotType == 'Boxplot'",
-                                         plotOutput("plot2")
-                                       ),
-                                       conditionalPanel(
-                                         condition = "input.plotType == 'BarPlot'",
-                                         plotOutput("plot3")
-                                       ),
-                                       conditionalPanel(
-                                         condition = "input.plotType == 'Histogram'",
-                                         plotOutput("plot4")
-                                       )
-                              ),
-                              tabPanel("Cor_Matrix", dataTableOutput("correlation")),
-                              tabPanel("Summary", dataTableOutput("summary")),
-                              tabPanel("Table", tableOutput("table"))
-                  )
-                )
+              navbarPage("Dataset Explorer Analysis",
+                         tabPanel("Plot Type", 
+                                  fluidRow(
+                                    sidebarLayout(
+                                      sidebarPanel(
+                                        h4("Subset data by gender:"),
+                                        selectInput("RIAGENDR", "Gender", selected = "Male", choices = levels(as.factor(raw_df$RIAGENDR))),
+                                        br(),
+                                        selectInput("plotType", "Plot Type",
+                                                    choices = c("Scatter Plot", "Boxplot", "BarPlot", "Histogram"),
+                                                    selected = "Scatter Plot"),
+                                        # Only show this panel if the plot type is a scatter plot
+                                        conditionalPanel(
+                                          condition = "input.plotType == 'Scatter Plot'",
+                                          selectInput("scatx", "X-axis Variable", 
+                                                      choices = numeric, 
+                                                      selected = "RIDAGEYR"),
+                                          selectInput("scaty", "Y-axis Variable", 
+                                                      choices = numeric, 
+                                                      selected = "RIDAGEYR")
+                                        ),
+                                        conditionalPanel(
+                                          condition = "input.plotType == 'Boxplot'",
+                                          
+                                          selectInput("boxx", "X-axis Variable", 
+                                                      choices = character_vars, 
+                                                      selected = "age_group"),
+                                          selectInput("boxy", "Y-axis Variable", 
+                                                      choices = numeric,  
+                                                      selected = "RIDAGEYR")
+                                        ),
+                                        conditionalPanel(
+                                          condition = "input.plotType == 'BarPlot'",
+                                          selectInput("barx", "X-axis Variable", 
+                                                      choices = character_vars, selected = "age_group"),
+                                          selectInput("bary", "Y-axis Variable", 
+                                                      choices = character_vars, 
+                                                      selected = "age_group")
+                                        ),
+                                        conditionalPanel(
+                                          condition = "input.plotType == 'Histogram'",
+                                          selectInput("histx", "X-axis Variable", 
+                                                      choices = numeric,
+                                                      selected = "RIDAGEYR")
+                                        ),
+                                        # only allow non-numeric variables for color
+                                        selectInput("color", "Color", c("None", names(df)[character])),
+                                        p("Smoothing is only available when two numeric variables are selected."),
+                                        checkboxInput("smooth", "Smooth")
+                                      ),
+                                      
+                                      mainPanel(conditionalPanel(
+                                        condition = "input.plotType == 'Scatter Plot'",
+                                        plotOutput("plotType")
+                                      ),
+                                      conditionalPanel(
+                                        condition = "input.plotType == 'Boxplot'",
+                                        plotOutput("plot2")
+                                      ),
+                                      conditionalPanel(
+                                        condition = "input.plotType == 'BarPlot'",
+                                        plotOutput("plot3")
+                                      ),
+                                      conditionalPanel(
+                                        condition = "input.plotType == 'Histogram'",
+                                        plotOutput("plot4")
+                                      )
+                                      )
+                                    )
+                                  )
+                         ),
+                         
+                         
+                         tabPanel("Cor_Matrix", dataTableOutput("correlation")),
+                         
+                         tabPanel("Summary", 
+                                  h5(style = "color: purple; font-size: 20px;","Numeric summary is for the full data set."),
+                                  hr(),
+                                  radioButtons("summary", "Numeric Summary", 
+                                               choices = c("Q1", "Q3", "Mean", "Median"), 
+                                               selected = "Mean"),
+                                  mainPanel(
+                                    DTOutput("summary"))
+                         ),
+                         
+                         tabPanel("Contigency Table",
+                                  h5("Contingency table is for the full data set."),
+                                  hr(),
+                                  sidebarPanel(
+                                    h4("Character Summary"),
+                                    selectInput("var1", "Variable 1", character_vars),
+                                    selectInput("var2", "Variable 2", character_vars)
+                                  ),
+                                  
+                                  mainPanel(
+                                    dataTableOutput("table")
+                                  )
+                         )
               )
       ),
       
@@ -186,7 +201,7 @@ Cor_Matrix and Summary are for the whole data set. Table show the table of obser
 server <- function(input, output, session) {
   
   output$logo <- renderImage({
-    list(src = "R.jpg", align = "right",
+    list(src = "C:/PestList/MyDocuments/Statistic/ST558/repos/FinalProject/R.jpg", align = "right",
          contentType = "image/jpeg", width = 600, height = 300,
          alt = "Logo")
   }, deleteFile = FALSE)
@@ -318,4 +333,3 @@ server <- function(input, output, session) {
 
 # Run the app ----
 shinyApp(ui = ui, server = server)
-
