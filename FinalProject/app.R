@@ -7,7 +7,7 @@ library(ggplot2)
 library(dplyr)
 library(tidyverse)
 library(knitr)
-library(htmltools)
+#library(htmltools)
 library(DT)
 # Dataset to be explored
 raw_df <- read.csv("../NHANES_age_prediction.csv")
@@ -262,14 +262,30 @@ ui <- dashboardPage(
               ),
     
       tabItem(tabName = 'pred',
-              h1("Prediction"),
-              tabPanel("Prediction", textOutput("pred"))      
-      )
-    )
-  )
-)
-
-    
+              tabPanel("Prediction", 
+                 fluidRow(
+                   sidebarLayout(
+                     sidebarPanel(      
+                       textInput("input_var1", "Input Predictor 1", value = ""),
+                       textInput("input_var2", "Input Predictor 2", value = ""),
+                       actionButton("predict_button", "Get Predictions")
+                     ),
+                   mainPanel(
+                     tabsetPanel(
+                       tabPanel("Logistic Regression",
+                          textOutput("logistic_prediction")),
+                       tabPanel("Random Forest",
+                          textOutput("rf_prediction")
+                          )
+                     )
+                    )
+                   )    
+                  )
+                )
+             )
+           )
+         )
+        )
 
 
 # Define server logic ----
@@ -428,6 +444,12 @@ server <- function(input, output, session) {
     raw_df
   })
   print(any(is.na(raw_df))) # check missing values in raw_df
+  
+  # Reactive values to store selected predictors for each model
+  log_selected_predictors <- reactiveVal(NULL)
+  rf_selected_predictors <- reactiveVal(NULL)
+  
+  
   observeEvent(input$fit_models, {
     # Perform test/train split
     set.seed(123)
@@ -470,13 +492,15 @@ server <- function(input, output, session) {
       } else {
         # Calculate AUC
         auc <- pROC::roc(test_data$age_group_numeric, predictions_numeric)
+        # Calculate RMSE manually
+        rmse <- sqrt(mean((test_data$age_group_numeric - predictions_numeric)^2))
         
         output$comparison_stats_log <- renderText({
-          paste("AUC:", round(auc$auc, 2))
+          paste("AUC:", round(auc$auc, 2), "\n",
+                "RMSE:", round(rmse, 2))
         })
       }
-      
-      
+ 
     } else if (input$model_type == "Random Forest") {
       # Fit random forest model
       if (!is.null(input$rf_pred) && length(input$rf_pred) > 0) {
@@ -536,7 +560,37 @@ server <- function(input, output, session) {
         })
       }
     }
+    # Update selected predictors for logistic regression model
+    log_selected_predictors(input$log_pred)
+    
+    # Update selected predictors for random forest model
+    rf_selected_predictors(input$rf_pred)
   })
+  
+  #Prediction
+  observeEvent(input$predict_button, {
+    # Get input values
+    input_var1_value <- as.numeric(input$input_var1)
+    input_var2_value <- as.numeric(input$input_var2)
+    
+    # Get selected predictors for logistic regression and random forest
+    log_model_predictors <- log_selected_predictors()
+    rf_model_predictors <- rf_selected_predictors()
+    
+    # Get predictions for both models using selected predictors
+    logistic_prediction <- predict(log_fit(), newdata = data.frame(input_var1 = input_var1_value, input_var2 = input_var2_value, log_model_predictors))
+    rf_prediction <- predict(rf_fit(), newdata = data.frame(input_var1 = input_var1_value, input_var2 = input_var2_value, rf_model_predictors))
+    
+    # Display or store the predictions as needed
+    output$logistic_prediction <- renderText({
+      paste("Logistic Regression Prediction:", logistic_prediction)
+    })
+    output$rf_prediction <- renderText({
+      paste("Random Forest Prediction:", rf_prediction)
+    })
+  })
+  
+  
 }
 
 # Run the app ----
