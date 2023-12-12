@@ -48,19 +48,16 @@ ui <- dashboardPage(
       # First tab content
       tabItem(tabName = "about",
               fluidRow(
-                mainPanel(
-                  imageOutput("logo")
-                ),
                 #two columns for each of the two items
                 column(6,
                        #Description of App
                        h1("What does this app do?"),
                        #box to contain description
-                       box(background = "light-blue", width = 12,
+                       box(background = "red", width = 10,
                            h4("This application presents the Exploratory Data Analysis (EDA) of the 2013-2014 NHANES (National Health and Nutrition Examination Survey) Age Prediction Subset. It showcases two models for predicting age."),
                            h4("The dataset comes from", a(href = "https://archive.ics.uci.edu", HTML("<span style='color: blue;'>UCI Machine Learning Repository</span>")),". It comprises 2,278 survey responses collected through interviews, physical examinations, and laboratory tests during the CDC’s NHANES in 2013-2014."),
-                           h4("The **About** tab provides an overview of the application, the **Data Exploration** tab offers basic information about the dataset, and the **Model** tab demonstrates the modeling approach applied to the dataset."),
-                           h4("The primary objective of this example is to explore the relationship between age and diabetes."),
+                           h4("The", strong("About"), "tab provides an overview of the application, the", strong("Data Exploration"), "tab offers basic information about the dataset, and the", strong("Model"),"tab demonstrates the modeling approach applied to the dataset."),
+                           h4("The primary objective of this example is to explore the relationship between",code("age group"), "and", code("creteria for diabetes"))
                        )
                 ),
                 
@@ -68,18 +65,20 @@ ui <- dashboardPage(
                        #How to use the app
                        h1("How to use the app?"),
                        #box to contain description
-                       box(background="light-blue",width=12,
-                           h4("The controls for the app are located to the left and the visualizations are available on the right."),
-                           h4("To change the number of successes observed (for example the number of coins landing head side up), the slider on the top left can be used."),
+                       box(background = "red",width = 10,
+                           h4("There are three main tabs in this app. The controls for the app are located to the left, while the visualizations are accessible on the right."),
+                           h4("The", code("Data Exploration"), "tab consists of four panels, each accessible through a simple click. In the Plot Type panel, you can select the plot type and variables to visualize data distributions. The other panels provide information of numeric and character summaries."),
                            h4("To change the prior distribution, the hyperparameters can be set using the input boxes on the left.  The changes in this distribution can be seen on the first graph."),
-                           h4("The resulting changes to the posterior distribution can be seen on the second graph.")
+                           h4("The", code("Modeling"), "tab consists of three subtabs. On the", code("Modeling Info"), "subtab, you can find information about logistic regression and random forest model methods. After fitting the model with your chosen predictors, explore the", code("Prediction"), "subtab to check the probability of being an adult based on various diabetes criteria.")
                        )
+                     ),
+                
+                mainPanel(
+                  imageOutput("logo")
                 )
                 
-                
-              )
-      ),
-      
+                )
+               ), 
       #actual app layout (second tab)     
       tabItem(tabName = "EDA",
         navbarPage("Dataset Explorer Analysis",
@@ -188,8 +187,8 @@ ui <- dashboardPage(
       ),
  
       # #Modeling tab content
-    tabItem("hiddenmodel", ""),
-       tabItem(tabName = 'model_info',
+      tabItem("hiddenmodel", ""),
+      tabItem(tabName = 'model_info',
               h1("Modeling Info"),
               tabPanel("Modeling Info", 
                        fluidRow(
@@ -198,26 +197,30 @@ ui <- dashboardPage(
                          # two columns for each of the two items
                          column(6,
                                 #description of modeling
-                                h1("Generalized Linear Regression Model-Logistic Regression"),
+                                h3("Generalized Linear Regression Model-Logistic Regression"),
                                 #box to contain description
                                 box(background = "light-blue", width = 12,
-                                    h4(""),
-                                    h4(""),
-                                    h4(""),
-                                    h4("")
-                                )
-                         ),
-                         
-                         column(6,
-                                #How to use the app
-                                h1("Random Forest "),
-                                #box to contain description
+                                    h4("A logistic regression model is a statistical technique used to examine the relationship between a binary outcome variable and one or more predictor variables. Commonly applied in classification problems, where the objective is to predict one of two possible outcomes, usually represented as 0 and 1 or Yes and No."),
+                                    h4("The logistic regression model assesses the relationship through the logistic function, also known as the sigmoid function. This function ensures that predicted probabilities fall within the range of 0 to 1."),
+                                    h4("The model parameters are estimated using a process called maximum likelihood estimation. In logistic regression, the dependent variable is categorical. In our case, where the dependent variable is age_group—a binary variable, logistic regression is an appropriate method."),
+                                    h4("Logistic regression provides easily interpretable results and can handle large datasets with efficience.However, It assumes a linear relationship between predictors and outcomes. If the relationship is not linear, it may not perform well. It may be prone to overfitting"),
+                                    h4("The logistic regression formula is expressed as:"),
+                                    h4("p", HTML("log<sub>odds</sub>(p) = β<sub>0</sub> + β<sub>1</sub>X<sub>1</sub> + β<sub>2</sub>X<sub>2</sub> + ... + β<sub>n</sub>X<sub>n</sub>")
+                                     )
+                                    )
+                                ),
+       
+                              column(6,
+                                
+                                h3("Random Forest "),
                                 #box to contain description
                                 box(background = "light-blue", width = 12,
-                                    h4(""),
-                                    h4(""),
-                                    h4(""),
-                                    h4("")
+                                    h4("A random forest regression model is a versatile machine learning algorithm employed for both regression and classification tasks. It operates as an ensemble technique, utilizing multiple decision trees to formulate predictions."),
+                                    h4("In this model, each decision tree is trained on a distinct subset of the data, and the final output is derived from the average of all individual decision tree outputs. This ensemble approach mitigates overfitting and enhances the overall accuracy of the model. Random forests demonstrate proficiency in predicting continuous values, such as stock prices, temperature, or sales figures, while also excelling in classifying variables."),
+                                    h4("Drawbacks of the random forest model include potential issues with interpretability due to its complexity, resource-intensive training process, and the possibility of overfitting when dealing with noisy datasets."),
+                                    h4("Formula for Random Forest Regression:"),
+                                    h4("Random Forest Regression Formula", HTML("ŷ = Σ(Predictions from Individual Trees) / Number of Trees"))
+                                    
                                 )
                          ) 
                        )       
@@ -318,7 +321,7 @@ ui <- dashboardPage(
 # Define server logic ----
 server <- function(input, output, session) {
   output$logo <- renderImage({
-    list(src = "../R.jpg", align = "right",
+    list(src = "../R.jpg", align = "left",
          contentType = "image/jpeg", width = 600, height = 300,
          alt = "Logo")
   }, deleteFile = FALSE)
@@ -376,15 +379,13 @@ server <- function(input, output, session) {
                       Q3 = round(quantile(Data[[var]], 0.75, na.rm = TRUE), 2),
                       Mean = round(mean(Data[[var]], na.rm = TRUE), 2),
                       Median = round(median(Data[[var]], na.rm = TRUE), 2)
-      )
+         )
       
       # Add the variable and its corresponding rounded summary statistic value to the data frame
       summary_data <- rbind(summary_data, c(var, value))
     }
-    
     # Set column names
     colnames(summary_data) <- c("Variable", selected_stat)
-    
     # Return the summary data frame
     summary_data
   })
