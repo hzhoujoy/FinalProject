@@ -7,7 +7,8 @@ library(ggplot2)
 library(dplyr)
 library(tidyverse)
 library(knitr)
-#library(htmltools)
+library(caret)
+library(randomForest)
 library(DT)
 # Dataset to be explored
 raw_df <- read.csv("../NHANES_age_prediction.csv")
@@ -258,34 +259,60 @@ ui <- dashboardPage(
                            )
                          )
                        )
-              )
+                   )
               ),
     
-      tabItem(tabName = 'pred',
-              tabPanel("Prediction", 
-                 fluidRow(
-                   sidebarLayout(
-                     sidebarPanel(      
-                       textInput("input_var1", "Input Predictor 1", value = ""),
-                       textInput("input_var2", "Input Predictor 2", value = ""),
-                       actionButton("predict_button", "Get Predictions")
-                     ),
-                   mainPanel(
-                     tabsetPanel(
-                       tabPanel("Logistic Regression",
-                          textOutput("logistic_prediction")),
-                       tabPanel("Random Forest",
-                          textOutput("rf_prediction")
+    tabItem(tabName = 'pred',
+            tabPanel("Age Group Prediction", 
+                     fluidRow(
+                       sidebarLayout(
+                         sidebarPanel(
+                           h3("Input Values"),
+                           selectInput("model_type", "Select Model", choices = c("Logistic Regression", "Random Forest")),
+                           sliderInput("BMXBMI", "Select BMXBMI:", min = 15,max = 60, value = 25),
+                           sliderInput("LBXGLU", "Select LBXGLU:",min = 40, max = 250,value = 80),
+                           sliderInput("LBXGLT", "Select LBXGLT:", min = 100, max = 300,value = 140),
+                           sliderInput("LBXIN"," Select LBXIN:", min = 1, max = 100, value = 20),
+                           selectInput("RIAGENDR","Select RIAGENDR:", choices = list("Female", "Male"), multiple = FALSE),
+                           selectInput("DIQ010","Select DIQ010:", choices = list("Yes", "No", "Prediabetes"), multiple = FALSE),
+                           conditionalPanel(
+                             condition = "input.model_type == 'Logistic Regression'",
+                             selectInput("log_pred_pred", "Selected Predictor Variables for Logistic Regression", 
+                                         choices = NULL, multiple = TRUE)),
+                           conditionalPanel(
+                             condition = "input.model_type == 'Random Forest'",
+                             selectInput("rf_pred_pred", "Selected Predictor Variables for Random Forest", 
+                                         choices = NULL, multiple = TRUE)),
+                           
+                           actionButton("predict_button", "Get Predictions")
+                         ),
+                         # Show a plot of the generated distribution
+                         mainPanel(
+                           tabsetPanel(
+                             tabPanel("Logistic Regression",
+                                      textOutput("prediction_log"),
+                                      tags$head(tags$style("#prediction_log{color: blue;
+                                 font-size: 20px;
+                                 font-style: italic;
+                                 }")
+                                      )),
+                             tabPanel("Random Forest",
+                                      textOutput("prediction_rf"),
+                                      tags$head(tags$style("#prediction_rf{color: red;
+                                       font-size: 20px;
+                                       font-style: italic;
+                                       }")
+                                      )
+                                    )
+                                  )
+                                )
+                             )
+                           )
                           )
+                         )
+                       )
                      )
-                    )
-                   )    
-                  )
-                )
-             )
-           )
-         )
-        )
+                 )
 
 
 # Define server logic ----
@@ -445,10 +472,9 @@ server <- function(input, output, session) {
   })
   print(any(is.na(raw_df))) # check missing values in raw_df
   
-  # Reactive values to store selected predictors for each model
-  log_selected_predictors <- reactiveVal(NULL)
-  rf_selected_predictors <- reactiveVal(NULL)
-  
+  # Define reactiveValues to store selected predictors for prediction
+  selected_log_pred <- reactiveVal(NULL)
+  selected_rf_pred <- reactiveVal(NULL)
   
   observeEvent(input$fit_models, {
     # Perform test/train split
@@ -462,6 +488,7 @@ server <- function(input, output, session) {
     ctrl <- trainControl(method = "repeatedcv", number = 5, repeats = 3)
     
     if (input$model_type == "Logistic Regression") {
+      
       # Fit logistic regression model
       log_fit <- train(age_group ~ ., 
                        data = train_data[, c("age_group", input$log_pred)], 
@@ -471,14 +498,22 @@ server <- function(input, output, session) {
                        trControl = ctrl
       )
       
+      saveRDS(log_fit, "linear_model.RDS")
       
       output$model_summary_log <- renderPrint({
-        summary(log_fit)
+        # Obtain the summary
+        summary_text <- capture.output(summary(log_fit))
+        # Convert the model object to a character string
+        model_text <- capture.output(print(log_fit))
+        # Combine both results
+        result <- c(summary_text, model_text)
+        # Print the combined result
+        cat(result, sep = "\n")
       })
       
       # Model comparison on test set
       predictions <- predict(log_fit, newdata = test_data, type = "prob")
-      predictions_numeric <- as.numeric(predictions[, "Senior"])
+      predictions_numeric <- as.numeric(predictions[, "Adult"])
       
       # Convert character to numeric
       test_data$age_group_numeric <- as.numeric(factor(test_data$age_group, levels = c("Adult", "Senior")))
@@ -500,7 +535,11 @@ server <- function(input, output, session) {
                 "RMSE:", round(rmse, 2))
         })
       }
- 
+      # Store selected predictors for logistic regression model
+      selected_log_pred(input$log_pred)
+      selected_rf_pred(NULL)  # Reset selected predictors for random forest
+      
+      
     } else if (input$model_type == "Random Forest") {
       # Fit random forest model
       if (!is.null(input$rf_pred) && length(input$rf_pred) > 0) {
@@ -513,6 +552,7 @@ server <- function(input, output, session) {
           metric = "Accuracy",
           tuneGrid = data.frame(mtry = 1:ncol(train_data[, input$rf_pred]))
         )
+        saveRDS(rf_fit, "Random_Forest.RDS")
         
         # Extract mtry, Accuracy, and Kappa values
         rf_results <- as.data.frame(rf_fit$results[, c("mtry", "Accuracy", "Kappa")])
@@ -559,37 +599,88 @@ server <- function(input, output, session) {
           paste("RMSE:", round(rmse, 2))
         })
       }
+      # Store selected predictors for random forest model
+      selected_rf_pred(input$rf_pred)
+      selected_log_pred(NULL)  # Reset selected predictors for logistic regression
+      
     }
-    # Update selected predictors for logistic regression model
-    log_selected_predictors(input$log_pred)
     
-    # Update selected predictors for random forest model
-    rf_selected_predictors(input$rf_pred)
   })
   
   #Prediction
-  observeEvent(input$predict_button, {
-    # Get input values
-    input_var1_value <- as.numeric(input$input_var1)
-    input_var2_value <- as.numeric(input$input_var2)
-    
-    # Get selected predictors for logistic regression and random forest
-    log_model_predictors <- log_selected_predictors()
-    rf_model_predictors <- rf_selected_predictors()
-    
-    # Get predictions for both models using selected predictors
-    logistic_prediction <- predict(log_fit(), newdata = data.frame(input_var1 = input_var1_value, input_var2 = input_var2_value, log_model_predictors))
-    rf_prediction <- predict(rf_fit(), newdata = data.frame(input_var1 = input_var1_value, input_var2 = input_var2_value, rf_model_predictors))
-    
-    # Display or store the predictions as needed
-    output$logistic_prediction <- renderText({
-      paste("Logistic Regression Prediction:", logistic_prediction)
-    })
-    output$rf_prediction <- renderText({
-      paste("Random Forest Prediction:", rf_prediction)
-    })
+  # UI: Update selectInput choices based on selected model type for prediction
+  observe({
+    if (input$model_type == "Logistic Regression") {
+      updateSelectInput(
+        session,
+        "log_pred_pred",
+        choices = setdiff(colnames(raw_df), c("SEQN", "PAQ605", "RIDAGEYR")),
+        selected = selected_log_pred()
+      )
+    } else if (input$model_type == "Random Forest") {
+      updateSelectInput(
+        session,
+        "rf_pred_pred",
+        choices = setdiff(colnames(raw_df), c("SEQN", "PAQ605", "RIDAGEYR")),
+        selected = selected_rf_pred()
+      )
+    }
   })
   
+  # read in the input values, and store them as a dataframe. 
+  input_df <- reactive({
+    data.frame(BMXBMI = input$BMXBMI,
+               LBXGLU = input$LBXGLU,
+               LBXGLT = input$LBXGLT,
+               LBXIN = input$LBXIN,
+               RIAGENDR = as.factor(input$RIAGENDR),
+               DIQ010 = as.factor(input$DIQ010))
+  })
+  
+  # Add this JavaScript function to highlight selected predictors
+  shinyjs::runjs(
+    "shinyjs.highlightPredictors = function(selector) {
+    $(selector).css({'border': '2px solid red'});
+  };"
+  )
+  
+  # Add this JavaScript function to remove highlighting
+  shinyjs::runjs(
+    "shinyjs.removeHighlight = function() {
+    $('input, select, textarea').css({'border': ''});
+  };"
+  )
+  
+  observeEvent(input$predict_button, {
+    if (input$model_type == "Logistic Regression") {
+      # read in model
+      model_log <- readRDS("linear_model.RDS")
+      # make the predictions
+      pred <- reactive({
+        # Make predictions with probabilities
+        predictions_prob <- as.numeric(predict(model_log, newdata = input_df(), type = "prob"))
+        predictions_prob[[1]]
+      })
+      
+      output$prediction_log <- renderText({
+        paste("The predicted probability of being an Adult by logistic regression model is:",
+              round(pred(), 4) )
+        })                  
+    }else if (input$model_type == "Random Forest") {
+      # read in model
+      model_rf <- readRDS("Random_Forest.RDS")
+      # make the predictions
+      pred <- reactive({
+        predictions_prob <- as.numeric(predict(model_rf, newdata = input_df(), type = "prob"))
+        predictions_prob[[1]]
+      })
+      # render the prediction to HTML text for display in the mainPanel of the ui, and assign it to output$pred
+      output$prediction_rf <- renderText({ 
+        paste("The predicted probability of being an Adult by random frost model is:",
+              round(pred(), 4))})
+    }
+    print(input_df())
+  })
   
 }
 
