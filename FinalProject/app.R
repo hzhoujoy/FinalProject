@@ -53,11 +53,11 @@ ui <- dashboardPage(
                        #Description of App
                        h1("What does this app do?"),
                        #box to contain description
-                       box(background = "red", width = 10,
-                           h4("This application presents the Exploratory Data Analysis (EDA) of the 2013-2014 NHANES (National Health and Nutrition Examination Survey) Age Prediction Subset. It showcases two models for predicting age."),
-                           h4("The dataset comes from", a(href = "https://archive.ics.uci.edu", HTML("<span style='color: blue;'>UCI Machine Learning Repository</span>")),". It comprises 2,278 survey responses collected through interviews, physical examinations, and laboratory tests during the CDC’s NHANES in 2013-2014."),
-                           h4("The", strong("About"), "tab provides an overview of the application, the", strong("Data Exploration"), "tab offers basic information about the dataset, and the", strong("Model"),"tab demonstrates the modeling approach applied to the dataset."),
-                           h4("The primary objective of this example is to explore the relationship between",code("age group"), "and", code("creteria for diabetes"))
+                       box(background = "red", width = 12,
+                           h3("This application presents the Exploratory Data Analysis (EDA) of the 2013-2014 NHANES (National Health and Nutrition Examination Survey) Age Prediction Subset. It demonstrates the applications of logistic regression and random forest models to predict age groups based on diabetes-related parameters."),
+                           h3("The dataset comes from", a(href = "https://archive.ics.uci.edu", HTML("<span style='color: blue;'>UCI Machine Learning Repository</span>")),". It comprises 2,278 survey responses collected through interviews, physical examinations, and laboratory tests during the CDC’s NHANES in 2013-2014."),
+                           h3("The", strong("About"), "tab provides an overview of the application, the", strong("Data Exploration"), "tab offers basic information about the dataset, and the", strong("Model"),"tab demonstrates the modeling approach applied to the dataset."),
+                           h3("The primary objective of this example is to explore the relationship between the target variable",code("age_group"), "and", code("creteria for diabetes"))
                        )
                 ),
                 
@@ -65,11 +65,11 @@ ui <- dashboardPage(
                        #How to use the app
                        h1("How to use the app?"),
                        #box to contain description
-                       box(background = "red",width = 10,
-                           h4("There are three main tabs in this app. The controls for the app are located to the left, while the visualizations are accessible on the right."),
-                           h4("The", code("Data Exploration"), "tab consists of four panels, each accessible through a simple click. In the Plot Type panel, you can select the plot type and variables to visualize data distributions. The other panels provide information of numeric and character summaries."),
-                           h4("To change the prior distribution, the hyperparameters can be set using the input boxes on the left.  The changes in this distribution can be seen on the first graph."),
-                           h4("The", code("Modeling"), "tab consists of three subtabs. On the", code("Modeling Info"), "subtab, you can find information about logistic regression and random forest model methods. After fitting the model with your chosen predictors, explore the", code("Prediction"), "subtab to check the probability of being an adult based on various diabetes criteria.")
+                       box(background = "red",width = 12,
+                           h3("There are three main tabs in this app. The controls for the app are located to the left, while the visualizations are accessible on the right."),
+                           h3("The", code("Data Exploration"), "tab consists of four panels, each accessible through a simple click. In the Plot Type panel, you can select the plot type and variables to visualize data distributions. The other panels provide information of numeric and character summaries."),
+                           h3("To change the prior distribution, the hyperparameters can be set using the input boxes on the left.  The changes in this distribution can be seen on the first graph."),
+                           h3("The", code("Modeling"), "tab consists of three subtabs. On the", code("Modeling Info"), "subtab, you can find information about logistic regression and random forest model methods. After fitting the model with your chosen predictors, explore the", code("Prediction"), "subtab to check the probability of being an adult based on various diabetes criteria.")
                        )
                      ),
                 
@@ -218,9 +218,8 @@ ui <- dashboardPage(
                                     h4("A random forest regression model is a versatile machine learning algorithm employed for both regression and classification tasks. It operates as an ensemble technique, utilizing multiple decision trees to formulate predictions."),
                                     h4("In this model, each decision tree is trained on a distinct subset of the data, and the final output is derived from the average of all individual decision tree outputs. This ensemble approach mitigates overfitting and enhances the overall accuracy of the model. Random forests demonstrate proficiency in predicting continuous values, such as stock prices, temperature, or sales figures, while also excelling in classifying variables."),
                                     h4("Drawbacks of the random forest model include potential issues with interpretability due to its complexity, resource-intensive training process, and the possibility of overfitting when dealing with noisy datasets."),
-                                    h4("Formula for Random Forest Regression:"),
-                                    h4("Random Forest Regression Formula", HTML("ŷ = Σ(Predictions from Individual Trees) / Number of Trees"))
-                                    
+                                    br(),
+                                    h4("Random Forest Regression Formula is : $$y = \\frac{1}{N} \\sum_{i=1}^{N} y_i$$")
                                 )
                          ) 
                        )       
@@ -265,57 +264,49 @@ ui <- dashboardPage(
                    )
               ),
     
-    tabItem(tabName = 'pred',
-            tabPanel("Age Group Prediction", 
-                     fluidRow(
-                       sidebarLayout(
-                         sidebarPanel(
-                           h3("Input Values"),
-                           selectInput("model_type", "Select Model", choices = c("Logistic Regression", "Random Forest")),
-                           sliderInput("BMXBMI", "Select BMXBMI:", min = 15,max = 60, value = 25),
-                           sliderInput("LBXGLU", "Select LBXGLU:",min = 40, max = 250,value = 80),
-                           sliderInput("LBXGLT", "Select LBXGLT:", min = 100, max = 300,value = 140),
-                           sliderInput("LBXIN"," Select LBXIN:", min = 1, max = 100, value = 20),
-                           selectInput("RIAGENDR","Select RIAGENDR:", choices = list("Female", "Male"), multiple = FALSE),
-                           selectInput("DIQ010","Select DIQ010:", choices = list("Yes", "No", "Prediabetes"), multiple = FALSE),
-                           conditionalPanel(
-                             condition = "input.model_type == 'Logistic Regression'",
+      tabItem(tabName = 'pred',
+              tabPanel("Age Group Prediction", 
+                       fluidRow(
+                         sidebarLayout(
+                           sidebarPanel(
+                             h3("Input Values"),
+                             selectInput("model_type", "Select Model", choices = c("Logistic Regression", "Random Forest")),
+                             sliderInput("BMXBMI", "Select BMXBMI:", min = 15,max = 60, value = 25),
+                             sliderInput("LBXGLU", "Select LBXGLU:",min = 40, max = 250,value = 80),
+                             sliderInput("LBXGLT", "Select LBXGLT:", min = 100, max = 300,value = 140),
+                             sliderInput("LBXIN"," Select LBXIN:", min = 1, max = 100, value = 20),
+                             selectInput("RIAGENDR","Select RIAGENDR:", choices = list("Female", "Male"), multiple = FALSE),
+                             selectInput("DIQ010","Select DIQ010:", choices = list("Yes", "No", "Prediabetes"), multiple = FALSE),
                              selectInput("log_pred_pred", "Selected Predictor Variables for Logistic Regression", 
-                                         choices = NULL, multiple = TRUE)),
-                           conditionalPanel(
-                             condition = "input.model_type == 'Random Forest'",
+                                         choices = NULL, multiple = TRUE),
                              selectInput("rf_pred_pred", "Selected Predictor Variables for Random Forest", 
-                                         choices = NULL, multiple = TRUE)),
-                           
-                           actionButton("predict_button", "Get Predictions")
-                         ),
-                         # Show a plot of the generated distribution
-                         mainPanel(
-                           tabsetPanel(
-                             tabPanel("Logistic Regression",
-                                      textOutput("prediction_log"),
-                                      tags$head(tags$style("#prediction_log{color: blue;
+                                         choices = NULL, multiple = TRUE),
+                             actionButton("predict_button", "Get Predictions")
+                           ),
+                           # Show a plot of the generated distribution
+                           mainPanel(
+                             h3("The predicted probability of age_group using Logistic Regression is:"),
+                             dataTableOutput("prediction_log"),
+                             tags$head(tags$style("#prediction_log{color: blue;
                                  font-size: 20px;
                                  font-style: italic;
-                                 }")
-                                      )),
-                             tabPanel("Random Forest",
-                                      textOutput("prediction_rf"),
-                                      tags$head(tags$style("#prediction_rf{color: red;
+                                 }")),
+                             h3("predicted probability of age_group using Random Forest is"),
+                             dataTableOutput("prediction_rf"),
+                             tags$head(tags$style("#prediction_rf{color: red;
                                        font-size: 20px;
                                        font-style: italic;
                                        }")
-                                      )
                                     )
-                                  )
-                                )
-                             )
-                           )
-                          )
+                                 )
+                               )
+                            )
                          )
                        )
-                     )
-                 )
+                    )
+                  )
+              )
+                 
 
 
 # Define server logic ----
@@ -514,7 +505,7 @@ server <- function(input, output, session) {
       
       # Model comparison on test set
       predictions <- predict(log_fit, newdata = test_data, type = "prob")
-      predictions_numeric <- as.numeric(predictions[, "Adult"])
+      predictions_numeric <- as.numeric(predictions[, "Senior"])
       
       # Convert character to numeric
       test_data$age_group_numeric <- as.numeric(factor(test_data$age_group, levels = c("Adult", "Senior")))
@@ -539,8 +530,7 @@ server <- function(input, output, session) {
       # Store selected predictors for logistic regression model
       selected_log_pred(input$log_pred)
       selected_rf_pred(NULL)  # Reset selected predictors for random forest
-      
-      
+
     } else if (input$model_type == "Random Forest") {
       # Fit random forest model
       if (!is.null(input$rf_pred) && length(input$rf_pred) > 0) {
@@ -603,11 +593,8 @@ server <- function(input, output, session) {
       # Store selected predictors for random forest model
       selected_rf_pred(input$rf_pred)
       selected_log_pred(NULL)  # Reset selected predictors for logistic regression
-      
     }
-    
-  })
-  
+   })
   #Prediction
   # UI: Update selectInput choices based on selected model type for prediction
   observe({
@@ -656,31 +643,53 @@ server <- function(input, output, session) {
     if (input$model_type == "Logistic Regression") {
       # read in model
       model_log <- readRDS("linear_model.RDS")
-      # make the predictions
-      pred <- reactive({
-        # Make predictions with probabilities
-        predictions_prob <- as.numeric(predict(model_log, newdata = input_df(), type = "prob"))
-        predictions_prob[[1]]
+      
+      pred_prob <- reactiveVal(NULL)
+      level_names <- reactiveVal(NULL)
+      
+      # Make predictions
+      observe({
+        pred_prob_val <- as.numeric(predict(model_log, input_df(), type = "prob"))
+        level_names_val <- levels(factor(data()$age_group))  # Get the levels of the response variable
+        pred_prob(pred_prob_val)
+        level_names(level_names_val)
       })
       
-      output$prediction_log <- renderText({
-        paste("The predicted probability of being an Adult by logistic regression model is:",
-              round(pred(), 4) )
-        })                  
+      # Create a data frame with probabilities
+      output$prediction_log <- renderDataTable({
+        # Check if pred_prob and level_names are not NULL before creating the data frame
+        if (!is.null(pred_prob()) && !is.null(level_names())) {
+          # Combine level names and predicted probabilities into a data frame
+          probabilities_df <- data.frame(Level = factor(level_names(), levels = level_names()), Probability = as.numeric(pred_prob()))
+          probabilities_df}
+      })
+      
+      
     }else if (input$model_type == "Random Forest") {
       # read in model
       model_rf <- readRDS("Random_Forest.RDS")
-      # make the predictions
-      pred <- reactive({
-        predictions_prob <- as.numeric(predict(model_rf, newdata = input_df(), type = "prob"))
-        predictions_prob[[1]]
+      
+      pred_prob <- reactiveVal(NULL)
+      level_names <- reactiveVal(NULL)
+      
+      # Make predictions
+      observe({
+        pred_prob_val <- as.numeric(predict(model_rf, input_df(), type = "prob"))
+        level_names_val <- levels(factor(data()$age_group))  # Get the levels of the response variable
+        pred_prob(pred_prob_val)
+        level_names(level_names_val)
       })
-      # render the prediction to HTML text for display in the mainPanel of the ui, and assign it to output$pred
-      output$prediction_rf <- renderText({ 
-        paste("The predicted probability of being an Adult by random frost model is:",
-              round(pred(), 4))})
+      
+      # Create a data frame with probabilities
+      output$prediction_rf <- renderDataTable({
+        # Check if pred_prob and level_names are not NULL before creating the data frame
+        if (!is.null(pred_prob()) && !is.null(level_names())) {
+          # Combine level names and predicted probabilities into a data frame
+          probabilities_df <- data.frame(Level = factor(level_names(), levels = level_names()), Probability = as.numeric(pred_prob()))
+          probabilities_df
+          }
+      })
     }
-    print(input_df())
   })
   
 }
