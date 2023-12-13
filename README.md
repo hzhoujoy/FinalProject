@@ -34,7 +34,7 @@ This project uses a [National Health and Nutrition Health Survey 2013-2014 (NHAN
 install.packages(c("shiny", "shinydashboard", "tidyverse", "caret", "ggplot2", "DT", "knitr", "dplyr", "lattice","randomForest", "shinyjs"))
 ```
 
-The shiny::runGitHub() code that we can copy and paste into RStudio to run the app  
+## The shiny::runGitHub() code for runing in the Rstudio  
 
 ```
 shiny::runGitHub("hzhoujoy/FinalProject")
