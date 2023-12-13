@@ -37,6 +37,11 @@ install.packages(c("shiny", "shinydashboard", "tidyverse", "caret", "ggplot2", "
 ## The shiny::runGitHub() code for runing in the Rstudio  
 
 ```
-shiny::runGitHub("hzhoujoy/FinalProject")
+shiny::runGitHub("FinalProject", "hzhoujoy", subdir = "FinalProject")
+
+runUrl("https://github.com/hzhoujoy/FinalProject/archive/HEAD.tar.gz",
+       subdir = "FinalProject")
+# Run the app ----
+shinyApp(ui = ui, server = server)
 
 ```
