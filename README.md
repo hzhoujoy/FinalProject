@@ -45,3 +45,16 @@ runUrl("https://github.com/hzhoujoy/FinalProject/archive/HEAD.tar.gz",
 shinyApp(ui = ui, server = server)
 
 ```
+I got ideas for developing the app from those works:
++ https://rstudio.github.io/cheatsheets/html/shiny.html?_gl=1*1c4ksv0*_ga*OTQxMDcxNTM5LjE3MDA0MzgwMjM.*_ga_2C0WZ1JHG0*MTcwMDQzODAyMy4xLjAuMTcwMDQzODAyMy4wLjAuMA..
++ https://github.com/kjytay/misc/blob/master/blog/2020-12-22%20dataset%20explorer/DatasetExplorer1/app.R
++ https://rstudio.github.io/shinydashboard/index.html
++ https://shiny.posit.co/r/articles/build/datatables/
++ https://shiny.posit.co/r/articles/build/tabsets/
++ https://shiny.posit.co/r/articles/build/tabsets/
++ https://github.com/whitneymichelle/shiny_home_price_prediction/blob/main/README.md
++ https://bookdown.org/pdr_higgins/rmrwr/sharing-models-with-shiny.html
++ https://www.statology.org/r-glm-predict/
++ https://stackoverflow.com/questions/48210709/show-content-for-menuitem-when-menusubitems-exist-in-shiny-dashboard
++ https://shiny.posit.co/r/gallery/widgets/datatables-demo/
+
