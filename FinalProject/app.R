@@ -128,9 +128,13 @@ ui <- dashboardPage(
                           ),
                           # only allow non-numeric variables for color
                           selectInput("color", "Color", c("None", names(df)[character])),
-                          p("Smoothing is only available when two numeric variables are selected."),
-                          checkboxInput("smooth", "Smooth")
-                        ),
+                          checkboxInput("smoothing", 
+                                        h4("Smoothing is only for scatter plot",
+                                           style = "color:blue")),
+                          
+                          conditionalPanel(condition = "input.smoothing == true",
+                                           checkboxInput("smooth", "Smooth")
+                          )),
                         
                         mainPanel(
                           conditionalPanel(
